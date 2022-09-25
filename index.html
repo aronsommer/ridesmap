@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-149176400-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-149176400-1');
+  </script>
+
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="On Ride Mapper you can see all your Strava activities on a customizable map. Activities can be filtered and colored by activity type and you get yearly statistics of your activites.">
+  <meta name="keywords" lang="en" content="Strava, heatmap, map, activities, statistics, custom">
+  <meta name="author" content="">
+
+  <title>See all your Strava activities on a map with RidesMap</title>
+
+
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.css"/>
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.5.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
+
+  <link href="css/bootstrap-slider.min.css" rel="stylesheet">
+
+
+  <link rel='stylesheet' href='css/spectrum.css' />
+  <link rel='stylesheet' href='css/rangeslider.css' />
+
+  <link href="css/styles.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+<div id="loader" class="loading">Loading&#8230;</div>
+
+<div id="loadertext">&nbsp;</div>
+
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+    <div class="container">
+
+      <!--<img src="img/schweiz1_256.jpg" style="height:50px; margin-right:10px;">-->
+      <span id="logo" style="margin-top:5px; margin-right:10px;"> </span>
+      <a href="https://twitter.com/mnowak_ch?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-size="large" data-show-screen-name="false" data-show-count="false">Follow @mnowak_ch</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+
+
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger mn-menu" style="cursor:pointer;" data-toggle="modal" data-target="#SupportModal">Support this project</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger mn-menu" style="cursor:pointer;" data-toggle="modal" data-target="#AboutModal">About</a>
+          </li>
+          <li class="nav-item">
+            <button type="button" id="get-activities" class="mn-menu btn btn-warning strava-button pulse">Get activities</button>
+          </li>
+          <li class="nav-item">
+            <a class="strava-button" id="strava-button-img-a">
+              <img id="strava-button-img" src="img/btn_strava_connectwith_orange@2x.png">
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- About Modal -->
+  <div class="modal fade" id="AboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="aboutModalLabel">About</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Follow me on Twitter for future updates:
+              <br>
+              <a href="https://twitter.com/mnowak_ch?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-size="large" data-show-screen-name="false" data-show-count="false">Follow @mnowak_ch</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+          </p>
+
+          <hr>
+
+          <p>
+            <strong>Suggestions?</strong> Get in touch:
+          </p>
+          <form id="contact-form" method="post" action="php/contact.php" role="form" data-toggle="validator">
+
+            <div class="form-group row">
+              <label class="col-4 col-form-label" for="name">Your name</label>
+              <div class="col-8">
+                <input id="name" name="name" type="text" class="form-control">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-4 col-form-label" for="email">Your email</label>
+              <div class="col-8">
+                <input id="email" name="email" type="email" class="form-control">
+                <div class="help-block with-errors"></div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="message" class="col-4 col-form-label">Your message</label>
+              <div class="col-8">
+                <textarea id="message" name="message" cols="40" rows="4" class="form-control" required="required" data-error="Nothing to send."></textarea>
+                <div class="help-block with-errors"></div>
+                <input hidden value=""  name="pottery" id="pottery" data-validate="false">
+              </div>
+            </div>
+            <!--
+            <div class="form-group row">
+              <label class="col-4 col-form-label" for="robotcontrol">Solve the equation:
+                <span id="lower-number-label"> </span>
+                <span id="operator"> </span>
+                <span id="upper-number-label"> </span>
+              </label>
+              <div class="col-8">
+                <input id="robotcontrol" name="robotcontrol" type="text" class="form-control" required="required">
+
+                <input hidden value=""  name="lower-number-val" id="lower-number-val">
+                <input hidden value=""  name="upper-number-val" id="upper-number-val">
+                <input hidden value=""  name="operator-val" id="operator-val">
+                <div class="help-block with-errors"></div>
+              </div>
+            </div>
+            -->
+            <div class="form-group row">
+              <div class="offset-4 col-8">
+                <input type="submit" class="btn btn-success btn-send" value="Send message">
+              </div>
+            </div>
+            <div class="messages"></div>
+          </form>
+
+          <hr>
+
+          <p>
+            <small>
+              Disclaimer: This website is not endorsed by Strava. Please do not ask Strava for support.
+            </small>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support Modal -->
+  <div class="modal fade" id="SupportModal" tabindex="-1" role="dialog" aria-labelledby="supportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="supportModalLabel">Support this project</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            This website is free but you can support covering the costs of running it by donating:
+          </p>
+          <p>
+            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                  <input type="hidden" name="cmd" value="_s-xclick" />
+                  <input type="hidden" name="hosted_button_id" value="CZHEHMZ7C4NG6" />
+                  <input type="image" style="margin-top:15px; margin-left:10px;" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                  <img alt="" border="0" src="https://www.paypal.com/en_CH/i/scr/pixel.gif" width="1" height="1" />
+            </form>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphic Modal -->
+  <div class="modal fade" id="GraphicModal" tabindex="-1" role="dialog" aria-labelledby="graphicModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="graphicModalLabel">Statistics</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active text-secondary" id="barchart-tab" data-toggle="tab" href="#barchart" role="tab" aria-controls="barchart" aria-selected="true">Yearly statistics</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-secondary" id="summary-tab" data-toggle="tab" href="#summary" role="tab" aria-controls="summary" aria-selected="false">Summary</a>
+            </li>
+            <!--
+            <li class="nav-item">
+              <a class="nav-link text-secondary" id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Contact</a>
+            </li>
+            -->
+          </ul>
+
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="barchart" role="tabpanel" aria-labelledby="barchart-tab">
+              <div id="chart"></div>
+            </div>
+            <div class="tab-pane fade" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+              <table class="table table-sm table-hover" style="width:300px; margin: auto; width: 50% !important; margin-top:10px;">
+                <thead>
+                  <tr>
+                    <th scope="col">Year</th>
+                    <th scope="col" class="text-right">Distance</th>
+                    <th scope="col" class="text-right">Activities</th>
+                  </tr>
+                </thead>
+                <tbody id="yearlyDistance">
+
+                </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div>
+          </div>
+
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hello Modal -->
+  <div class="modal fade" id="helloModal" tabindex="-1" role="dialog" aria-labelledby="helloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="helloLabel">Hello!</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            This website lets you see all your Strava activities on a map.
+            Click the <strong>Connect with Strava</strong> button below and allow the connection to your Strava account.
+            Then click «Get activities».
+            <br>
+            <div style="width:50% !important; margin:0 auto;">
+              <a class="strava-button">
+                <img id="strava-button-img" src="img/btn_strava_connectwith_orange@2x.png">
+              </a>
+            </div>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Error Modal -->
+  <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="errorLabel">Something went wrong!</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <span id='error-message'></span>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-wrapper">
+    <div id="map"></div>
+  </div>
+
+
+  <nav class="navbar fixed-bottom navbar-expand-sm navbar-dark bg-dark">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <!-- Brand -->
+
+
+  <!-- Links -->
+  <div class="collapse navbar-collapse" id="nav-content">
+    <img id="powered-by-strava" src="img/api_logo_pwrdBy_strava_horiz_white.png"></img>
+  <ul class="navbar-nav">
+    <!--
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link 1</a>
+  </li>
+    -->
+  <li class="nav-item">
+    <div class="btn-group dropup">
+      <button type="button" class="mn-menu-bottom btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Line styling
+      </button>
+      <div class="dropdown-menu" id="linestyle-menu">
+        <div class="dropdown-header">Line color</div>
+        <span class="dropdown-item">
+          <form>
+            <input id="color-changer" type="checkbox" checked data-toggle="toggle" data-on="Choose" data-off="By type" data-onstyle="success" data-offstyle="danger" data-width="70%">
+            <input type='text' id="linecolor"/>
+          </form>
+        </span>
+
+        <div class="dropdown-header">Line width</div>
+        <span class="dropdown-item">
+          <div class="slidecontainer">
+            <input type="range" min="10" max="200" value="18" class="slider" id="lineWidthSlider">
+          </div>
+        </span>
+        <!--
+        <a class="dropdown-item" href="#">Something else here</a>
+        -->
+        <div class="dropdown-divider"></div>
+
+      </div>
+    </div>
+  </li>
+  <li class="nav-item">
+    <div class="btn-group dropup" >
+    <button type="button" class="mn-menu-bottom btn btn-light dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Filter activities
+    </button>
+      <div class="dropdown-menu" id="displayOptions-menu">
+        <div class="dropdown-header">Select activity types to display</div>
+        <span id="activityToggles">
+        </span>
+        <span class="dropdown-item">
+          <button type="button" class="btn btn-dark btn-sm" id="inverseActivitySelection">Inverse selection</button>
+        </span>
+        <div class="dropdown-header">Select years to display: <span id="year1"></span><span id="yearBindeStrich">–</span><span id="year2"></span> <button id="resetYears" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+        <span class="dropdown-item">
+          <form>
+            <input type="range" min="10" max="200" value="18" class="slider" id="yearSlider">
+          </form>
+        </span>
+
+      </div>
+    </div>
+  </li>
+  <li class="nav-item">
+    <button type="button" class="mn-menu-bottom btn btn-light" data-toggle="modal" data-target="#GraphicModal">Statistics</button>
+  </li>
+  <!--
+  <li class="nav-item">
+    <button type="button" class="mn-menu-bottom btn btn-light" onclick="manualPrint()">Download map</button>
+  </li>
+  -->
+  <ul>
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <span>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+              <input type="hidden" name="cmd" value="_s-xclick" />
+              <input type="hidden" name="hosted_button_id" value="CZHEHMZ7C4NG6" />
+              <input type="image" style="margin-top:15px; margin-left:10px;" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+              <img alt="" border="0" src="https://www.paypal.com/en_CH/i/scr/pixel.gif" width="1" height="1" />
+        </form>
+      </span>
+    </li>
+
+  </ul>
+  </nav>
+
+<!--
+  <footer class="footer fixed-bottom  bg-dark">
+    <div class="container">
+  <div class="row">
+    <div class="col-sm">
+      <span style:"align-content: left;">
+
+      </span>
+    </div>
+    <div class="col-sm">
+
+    </div>
+        <div class="col-sm">
+
+        </div>
+      </div>
+    </div>
+
+
+  </footer>
+-->
+  <!-- Bootstrap core JavaScript -->
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.5.0/js/bootstrap4-toggle.min.js"></script>
+  <!-- Plugin JavaScript -->
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom JavaScript for this theme -->
+  <script src="javascript/scrolling-nav.js"></script>
+
+  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/url-polyfill@1.1.7/url-polyfill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
+
+  <script src="javascript/leaflet-providers.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-tilelayer-swiss@2.3.0/dist/Leaflet.TileLayer.Swiss.umd.js" crossorigin
+          integrity="sha384-M4p8VfZ8RG6qNiPYA3vOCApQXAlLtnJXVPdydMYPAsvvIDsWp2dqqzF2OEeWWNhy"></script>
+
+  <script src="javascript/savemap.js"></script>
+
+  <script src="javascript/geojson-polyline.min.js"></script>
+  <script src="javascript/strava.js"></script>
+
+  <script src='javascript/spectrum.js'></script>
+  <script src="javascript/rangeslider.js"></script>
+
+  <script src="javascript/bootstrap-slider.min.js"></script>
+
+  <script src="javascript/values.js"></script>
+
+
+  <!-- for testing: local lines -->
+  <!-- <script src="javascript/lines.js"></script> -->
+
+
+  <script src="javascript/bootstrap.validator.js"></script>
+
+  <script src="javascript/contact.js"></script>
+
+  <script src="javascript/functions.js"></script>
+
+  <script src="javascript/barchart.js"></script>
+
+  <script src="javascript/app.js"></script>
+
+
+
+
+</body>
+
+</html>
